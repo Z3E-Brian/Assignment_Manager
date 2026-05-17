@@ -98,6 +98,8 @@ file.upload-dir=uploads
 
 > **Nota:** `jwt.secret` debe cambiarse en producción. El valor actual es solo para desarrollo.
 
+> ⚠️ Asegúrate de que `JAVA_HOME` apunte a un JDK 21. Si tienes varias versiones, `./mvnw.cmd` usará `JAVA_HOME`. Verifica con `./mvnw.cmd --version | grep "Java version"`.
+
 ### 5. Construir y ejecutar
 
 ```bash
