@@ -196,7 +196,9 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public Page<UserDto> findStudentsByCareerId(Long careerId, Pageable pageable) {
-        Page<User> studentsPage = userRepository.findStudentsByCareerId(careerId, pageable);
+        Page<User> studentsPage = (careerId == null || careerId == 0)
+                ? userRepository.findAllStudents(pageable)
+                : userRepository.findStudentsByCareerId(careerId, pageable);
         return studentsPage.map(userMapper::convertToDTO);
     }
 

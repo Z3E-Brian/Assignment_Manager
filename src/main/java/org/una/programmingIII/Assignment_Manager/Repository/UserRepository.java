@@ -22,5 +22,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "WHERE p.name = 'TAKE_CLASSES' AND u.career_id=:careerId " +
             "ORDER BY u.last_name ASC", nativeQuery = true)
     Page<User> findStudentsByCareerId(@Param("careerId") Long careerId, Pageable pageable);
+
+    @Query(value = "SELECT u.* FROM users u JOIN user_permissions up " +
+            "ON u.id = up.user_id JOIN permissions p ON up.permission_id = p.id " +
+            "WHERE p.name = 'TAKE_CLASSES' " +
+            "ORDER BY u.last_name ASC", nativeQuery = true)
+    Page<User> findAllStudents(Pageable pageable);
 }
 
