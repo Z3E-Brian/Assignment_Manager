@@ -44,6 +44,7 @@ import org.una.programmingIII.Assignment_Manager.Service.PasswordEncryptionServi
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -84,18 +85,42 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         List<Permission> allPermissions = permissionRepository.saveAll(
-                List.of(createPermission(PermissionType.VIEW_COURSES),
+                List.of(createPermission(PermissionType.CREATE_UNIVERSITIES),
+                        createPermission(PermissionType.EDIT_UNIVERSITIES),
+                        createPermission(PermissionType.DELETE_UNIVERSITIES),
+                        createPermission(PermissionType.VIEW_UNIVERSITIES),
+                        createPermission(PermissionType.CREATE_FACULTIES),
+                        createPermission(PermissionType.EDIT_FACULTIES),
+                        createPermission(PermissionType.DELETE_FACULTIES),
+                        createPermission(PermissionType.VIEW_FACULTIES),
+                        createPermission(PermissionType.CREATE_DEPARTMENTS),
+                        createPermission(PermissionType.EDIT_DEPARTMENTS),
+                        createPermission(PermissionType.DELETE_DEPARTMENTS),
+                        createPermission(PermissionType.VIEW_DEPARTMENTS),
+                        createPermission(PermissionType.CREATE_CAREERS),
+                        createPermission(PermissionType.EDIT_CAREERS),
+                        createPermission(PermissionType.DELETE_CAREERS),
+                        createPermission(PermissionType.VIEW_CAREERS),
+                        createPermission(PermissionType.CREATE_COURSES),
+                        createPermission(PermissionType.EDIT_COURSES),
+                        createPermission(PermissionType.DELETE_COURSES),
+                        createPermission(PermissionType.VIEW_COURSES),
+                        createPermission(PermissionType.CREATE_USERS),
+                        createPermission(PermissionType.EDIT_USERS),
+                        createPermission(PermissionType.DELETE_USERS),
+                        createPermission(PermissionType.VIEW_USERS),
+                        createPermission(PermissionType.MANAGE_PERMISSIONS),
                         createPermission(PermissionType.CREATE_ASSIGNMENTS),
-                        createPermission(PermissionType.SUBMIT_ASSIGNMENTS),
+                        createPermission(PermissionType.EDIT_ASSIGNMENTS),
+                        createPermission(PermissionType.DELETE_ASSIGNMENTS),
+                        createPermission(PermissionType.VIEW_ASSIGNMENTS),
                         createPermission(PermissionType.GRADE_ASSIGNMENTS),
+                        createPermission(PermissionType.SUBMIT_ASSIGNMENTS),
                         createPermission(PermissionType.VIEW_GRADES),
-                        createPermission(PermissionType.MANAGE_USERS),
-                        createPermission(PermissionType.VIEW_REPORTS),
                         createPermission(PermissionType.EDIT_PROFILE),
                         createPermission(PermissionType.TEACH_CLASSES),
+                        createPermission(PermissionType.SUBMIT_FEEDBACK),
                         createPermission(PermissionType.TAKE_CLASSES),
-                        createPermission(PermissionType.GLOBAL_MAINTENANCE),
-                        createPermission(PermissionType.EDIT_COURSES),
                         createPermission(PermissionType.REGISTER_STUDENT_COURSES))
         );
 
@@ -150,21 +175,16 @@ public class DataSeeder implements CommandLineRunner {
                         "Formación en cuidados de enfermería y gestión sanitaria", enfermeria)
         );
 
-        Set<Permission> adminPerms = Set.of(
-                allPermissions.get(0), allPermissions.get(1), allPermissions.get(2),
-                allPermissions.get(3), allPermissions.get(4), allPermissions.get(5),
-                allPermissions.get(6), allPermissions.get(7), allPermissions.get(8),
-                allPermissions.get(9), allPermissions.get(10), allPermissions.get(11),
-                allPermissions.get(12)
-        );
+        Set<Permission> adminPerms = new java.util.HashSet<>(allPermissions);
         Set<Permission> professorPerms = Set.of(
-                allPermissions.get(0), allPermissions.get(1), allPermissions.get(3),
-                allPermissions.get(4), allPermissions.get(7), allPermissions.get(8),
-                allPermissions.get(11)
+                allPermissions.get(19), allPermissions.get(28), allPermissions.get(25),
+                allPermissions.get(26), allPermissions.get(17), allPermissions.get(33),
+                allPermissions.get(29), allPermissions.get(31), allPermissions.get(32),
+                allPermissions.get(34)
         );
         Set<Permission> studentPerms = Set.of(
-                allPermissions.get(0), allPermissions.get(2), allPermissions.get(4),
-                allPermissions.get(7), allPermissions.get(9)
+                allPermissions.get(19), allPermissions.get(28), allPermissions.get(30),
+                allPermissions.get(31), allPermissions.get(32), allPermissions.get(35)
         );
 
         User admin = userRepository.save(createUser(
@@ -339,7 +359,7 @@ public class DataSeeder implements CommandLineRunner {
         c.setCareer(career);
         c.setStartDate(startDate);
         c.setEndDate(endDate);
-        c.setStudents(students);
+        c.setUsers(students);
         return c;
     }
 
