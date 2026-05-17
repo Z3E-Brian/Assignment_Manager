@@ -45,6 +45,7 @@ import org.una.programmingIII.Assignment_Manager.Service.PasswordEncryptionServi
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -80,49 +81,10 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        List<Permission> allPermissions = ensureAllPermissionsExist();
         if (userRepository.count() > 0) {
             return;
         }
-
-        List<Permission> allPermissions = permissionRepository.saveAll(
-                List.of(createPermission(PermissionType.CREATE_UNIVERSITIES),
-                        createPermission(PermissionType.EDIT_UNIVERSITIES),
-                        createPermission(PermissionType.DELETE_UNIVERSITIES),
-                        createPermission(PermissionType.VIEW_UNIVERSITIES),
-                        createPermission(PermissionType.CREATE_FACULTIES),
-                        createPermission(PermissionType.EDIT_FACULTIES),
-                        createPermission(PermissionType.DELETE_FACULTIES),
-                        createPermission(PermissionType.VIEW_FACULTIES),
-                        createPermission(PermissionType.CREATE_DEPARTMENTS),
-                        createPermission(PermissionType.EDIT_DEPARTMENTS),
-                        createPermission(PermissionType.DELETE_DEPARTMENTS),
-                        createPermission(PermissionType.VIEW_DEPARTMENTS),
-                        createPermission(PermissionType.CREATE_CAREERS),
-                        createPermission(PermissionType.EDIT_CAREERS),
-                        createPermission(PermissionType.DELETE_CAREERS),
-                        createPermission(PermissionType.VIEW_CAREERS),
-                        createPermission(PermissionType.CREATE_COURSES),
-                        createPermission(PermissionType.EDIT_COURSES),
-                        createPermission(PermissionType.DELETE_COURSES),
-                        createPermission(PermissionType.VIEW_COURSES),
-                        createPermission(PermissionType.CREATE_USERS),
-                        createPermission(PermissionType.EDIT_USERS),
-                        createPermission(PermissionType.DELETE_USERS),
-                        createPermission(PermissionType.VIEW_USERS),
-                        createPermission(PermissionType.MANAGE_PERMISSIONS),
-                        createPermission(PermissionType.CREATE_ASSIGNMENTS),
-                        createPermission(PermissionType.EDIT_ASSIGNMENTS),
-                        createPermission(PermissionType.DELETE_ASSIGNMENTS),
-                        createPermission(PermissionType.VIEW_ASSIGNMENTS),
-                        createPermission(PermissionType.GRADE_ASSIGNMENTS),
-                        createPermission(PermissionType.SUBMIT_ASSIGNMENTS),
-                        createPermission(PermissionType.VIEW_GRADES),
-                        createPermission(PermissionType.EDIT_PROFILE),
-                        createPermission(PermissionType.TEACH_CLASSES),
-                        createPermission(PermissionType.SUBMIT_FEEDBACK),
-                        createPermission(PermissionType.TAKE_CLASSES),
-                        createPermission(PermissionType.REGISTER_STUDENT_COURSES))
-        );
 
         University una = universityRepository.save(
                 createUniversity("Universidad Nacional (UNA)", "Heredia, Costa Rica")
@@ -296,6 +258,18 @@ public class DataSeeder implements CommandLineRunner {
         System.out.println("Seed data inserted successfully!");
         System.out.println("  Users: admin@test.com, carlos.mendoza@test.com, juan.perez@test.com, etc.");
         System.out.println("  All passwords: 123456");
+    }
+
+    private List<Permission> ensureAllPermissionsExist() {
+        List<Permission> all = new ArrayList<>();
+        for (PermissionType type : PermissionType.values()) {
+            Permission p = permissionRepository.findByName(type);
+            if (p == null) {
+                p = permissionRepository.save(createPermission(type));
+            }
+            all.add(p);
+        }
+        return all;
     }
 
     private Permission createPermission(PermissionType name) {
