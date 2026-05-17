@@ -50,6 +50,12 @@ public class DepartmentController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = CustomErrorResponse.class))),
     })
+    @GetMapping("getByFacultyId/{facultyId}")
+    public ResponseEntity<List<DepartmentDto>> getDepartmentsByFacultyId(@PathVariable Long facultyId) {
+        List<DepartmentDto> departments = departmentService.getDepartmentsByFacultyId(facultyId);
+        return new ResponseEntity<>(departments, HttpStatus.OK);
+    }
+
     @GetMapping("getMap")
     public ResponseEntity<Map<String, Object>> getDepartments(
             @RequestParam(defaultValue = "0") int page,

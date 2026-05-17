@@ -53,7 +53,7 @@ public class CourseServiceImplementation implements CourseService {
         Page<Course> coursePage = courseRepository.findAll(PageRequest.of(page, size));
 
         coursePage.forEach(course -> {
-            course.setStudents(limitSetOrDefault(course.getStudents(), limit));
+            course.setUsers(limitSetOrDefault(course.getUsers(), limit));
         });
 
         Map<String, Object> response = new HashMap<>();
@@ -93,7 +93,7 @@ public class CourseServiceImplementation implements CourseService {
         if (course.isPresent()) {
             course.get().setCareer(null);
             course.get().setProfessor(null);
-            course.get().getStudents().clear();
+            course.get().getUsers().clear();
             courseRepository.save(course.get());
             courseRepository.delete(course.get());
         } else {
@@ -126,20 +126,13 @@ public class CourseServiceImplementation implements CourseService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id " + userId));
 
-        course.getStudents().add(user); // Añadir el estudiante al curso
+        course.getUsers().add(user); // Añadir el estudiante al curso
         courseRepository.save(course); // Guardar el curso actualizado
     }
 
     @Override
     public void unenrollStudent(Long courseId, Long userId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFoundException("Course not found with id " + courseId));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id " + userId));
-
-        course.getStudents().remove(user);
-        courseRepository.save(course);
+        courseRepository.unenrollCourseUser(userId, courseId);
     }
 
     @Override
@@ -153,6 +146,14 @@ public class CourseServiceImplementation implements CourseService {
     @Override
     public List<CourseDto> findCoursesEnrolledByStudentIdAAndProfessorIs(Long professorId, Long studentId) {
         return courseRepository.findCoursesEnrolledByStudentIdAAndProfessorIs(professorId, studentId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CourseDto> findCoursesByProfessorId(Long professorId) {
+        return courseRepository.findCoursesByProfessorId(professorId)
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -178,7 +179,7 @@ public class CourseServiceImplementation implements CourseService {
 
     private CourseDto convertToDto(Course course) {
         CourseDto courseDto = courseMapper.convertToDTO(course);
-        List<Long> usersId = course.getStudents().stream()
+        List<Long> usersId = course.getUsers().stream()
                 .map(user -> user.getId())
                 .collect(Collectors.toList());
         courseDto.setStudentsId(usersId);

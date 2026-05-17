@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -136,7 +137,7 @@ public class UserController {
     public ResponseEntity<?> createUser(@RequestBody UserInput userInput) {
         try {
             UserDto createdUser = userService.createUser(userInput);
-            emailService.sendActivationEmail(createdUser.getEmail(), "Activate User Account", createdUser.getId());
+            emailService.sendActivationEmailThread(createdUser.getEmail(), "Activate User Account", createdUser.getId());
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
         } catch (DuplicateEmailException e) {
             return new ResponseEntity<>(new CustomErrorResponse(e.getMessage(), HttpStatus.CONFLICT.value()), HttpStatus.CONFLICT);
@@ -161,6 +162,10 @@ public class UserController {
                     .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
         } catch (ElementNotFoundException ex) {
             return new ResponseEntity<>(new CustomErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
+        } catch (DuplicateEmailException e) {
+            return new ResponseEntity<>(new CustomErrorResponse(e.getMessage(), HttpStatus.CONFLICT.value()), HttpStatus.CONFLICT);
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -198,15 +203,16 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = CustomErrorResponse.class)))
     })
-    @GetMapping("/students/byCareerId/{id}")
-    public ResponseEntity<?> findStudentsByCareerId(@PathVariable Long id) {
-        try {
-            List<UserDto> students = userService.findStudentsByCareerId(id);
-            return new ResponseEntity<>(students, HttpStatus.OK);
-        } catch (ElementNotFoundException ex) {
-            return new ResponseEntity<>(new CustomErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
-        } catch (Exception ex) {
-            return new ResponseEntity<>(new CustomErrorResponse("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+
+    @GetMapping("/studentsByCareer/{careerId}")
+    public ResponseEntity<Page<UserDto>> findStudentsByCareerId(
+            @PathVariable Long careerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserDto> studentsPage = userService.findStudentsByCareerId(careerId, pageable);
+        return new ResponseEntity<>(studentsPage, HttpStatus.OK);
     }
+
+
 }

@@ -28,6 +28,13 @@ public class FacultyServiceImplementation implements FacultyService {
     }
 
     @Override
+    public List<FacultyDto> getFacultiesByUniversityId(Long universityId) {
+        return facultyRepository.findByUniversityId(universityId).stream()
+                .map(facultyMapper::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public FacultyDto create(FacultyDto facultyDto) {
         Faculty faculty = facultyMapper.convertToEntity(facultyDto);
         faculty = facultyRepository.save(faculty);

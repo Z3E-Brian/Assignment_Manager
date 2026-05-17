@@ -35,6 +35,5 @@ public interface UserService {
 
     List<UserDto> getUsersByPermission(String permission);
 
-    List<UserDto> findStudentsByCareerId(Long careerId);
-
+    Page<UserDto> findStudentsByCareerId(Long careerId, Pageable pageable);
 }

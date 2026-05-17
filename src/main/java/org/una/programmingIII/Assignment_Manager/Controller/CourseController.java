@@ -257,5 +257,14 @@ public class CourseController {
         }
     }
 
-
+    @GetMapping("/professor/{professorId}")
+    public ResponseEntity<?> findCoursesByProfessorId(
+            @PathVariable Long professorId){
+        try {
+            List<CourseDto> courses = courseService.findCoursesByProfessorId(professorId);
+            return new ResponseEntity<>(courses, HttpStatus.OK);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new CustomErrorResponse("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

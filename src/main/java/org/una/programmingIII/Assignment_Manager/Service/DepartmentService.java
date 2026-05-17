@@ -12,6 +12,8 @@ public interface DepartmentService {
 
     List<DepartmentDto> getAllDepartments();
 
+    List<DepartmentDto> getDepartmentsByFacultyId(Long facultyId);
+
     Map<String, Object> getDepartments(int page, int size, int limit);
 
     Page<DepartmentDto> getPageDepartments(Pageable pageable);

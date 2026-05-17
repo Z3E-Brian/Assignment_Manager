@@ -30,6 +30,13 @@ public class DepartmentServiceImplementation implements DepartmentService {
     }
 
     @Override
+    public List<DepartmentDto> getDepartmentsByFacultyId(Long facultyId) {
+        return departmentRepository.findByFacultyId(facultyId).stream()
+                .map(departmentMapper::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public DepartmentDto create(DepartmentDto departmentDto) {
         Department department = departmentMapper.convertToEntity(departmentDto);
         department = departmentRepository.save(department);

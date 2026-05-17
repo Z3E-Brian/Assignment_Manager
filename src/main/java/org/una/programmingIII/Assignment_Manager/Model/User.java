@@ -60,6 +60,9 @@ public class User {
     @JoinColumn(name = "career_id")
     private Career career;
 
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    private Set<Course> courses;
+
 
     @PrePersist
     protected void onCreate() {

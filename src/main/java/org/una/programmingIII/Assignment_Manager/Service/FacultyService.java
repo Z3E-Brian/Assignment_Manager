@@ -12,6 +12,8 @@ public interface FacultyService {
     
     List<FacultyDto> getAllFaculties();
 
+    List<FacultyDto> getFacultiesByUniversityId(Long universityId);
+
     Map<String, Object> getFaculties(int page, int size, int limit);
 
     Page<FacultyDto> getPageFaculty(Pageable pageable);

@@ -21,9 +21,10 @@ public class Career {
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @OneToMany(mappedBy = "career")
+    @OneToMany(mappedBy = "career", cascade = CascadeType.REMOVE)
+    private List<User> users;
+
+    @OneToMany(mappedBy = "career", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Course> courses;
 
-    @OneToMany(mappedBy = "career")
-    private List<User> users;
 }

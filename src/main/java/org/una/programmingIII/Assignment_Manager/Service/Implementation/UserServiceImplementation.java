@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.una.programmingIII.Assignment_Manager.Dto.Input.UserInput;
+import org.una.programmingIII.Assignment_Manager.Dto.PermissionDto;
 import org.una.programmingIII.Assignment_Manager.Dto.UserDto;
 import org.una.programmingIII.Assignment_Manager.Exception.BlankInputException;
 import org.una.programmingIII.Assignment_Manager.Exception.DuplicateEmailException;
@@ -14,6 +15,7 @@ import org.una.programmingIII.Assignment_Manager.Exception.ElementNotFoundExcept
 import org.una.programmingIII.Assignment_Manager.Mapper.GenericMapper;
 import org.una.programmingIII.Assignment_Manager.Mapper.GenericMapperFactory;
 import org.una.programmingIII.Assignment_Manager.Model.Career;
+import org.una.programmingIII.Assignment_Manager.Model.Permission;
 import org.una.programmingIII.Assignment_Manager.Model.User;
 import org.una.programmingIII.Assignment_Manager.Repository.CareerRepository;
 import org.una.programmingIII.Assignment_Manager.Repository.UserRepository;
@@ -33,15 +35,18 @@ public class UserServiceImplementation implements UserService {
     private final PasswordEncryptionService passwordEncryptionService;
     private final GenericMapper<User, UserDto> userMapper;
     private final GenericMapper<User, UserInput> userInputMapper;
+    private final GenericMapper<Permission, PermissionDto> permissionMapper;
     private final CareerRepository careerRepository;
 
     @Autowired
-    public UserServiceImplementation(GenericMapperFactory mapperFactory, PasswordEncryptionService passwordEncryptionService, UserRepository userRepository, CareerRepository careerRepository) {
+    public UserServiceImplementation(GenericMapperFactory mapperFactory, PasswordEncryptionService passwordEncryptionService,
+                                     UserRepository userRepository, CareerRepository careerRepository) {
         this.userMapper = mapperFactory.createMapper(User.class, UserDto.class);
         this.userInputMapper = mapperFactory.createMapper(User.class, UserInput.class);
         this.userRepository = userRepository;
         this.careerRepository = careerRepository;
         this.passwordEncryptionService = passwordEncryptionService;
+        this.permissionMapper = mapperFactory.createMapper(Permission.class, PermissionDto.class);
     }
 
     @Override
@@ -120,16 +125,33 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public Optional<UserDto> updateUser(Long id, UserInput userInput) {
-        User user = userRepository.findByEmail(userInput.getEmail());
         return userRepository.findById(id)
                 .map(existingUser -> {
-                    User updatedUser = userInputMapper.convertToEntity(userInput);
-                    updatedUser.setId(id);
-                    updatedUser.setCreatedAt(existingUser.getCreatedAt());
-                    updatedUser.setLastUpdate(existingUser.getLastUpdate());
-                    updatedUser.setPassword(user.getPassword());
-                    updatedUser.setActive(user.isActive());
-                    User savedUser = userRepository.save(updatedUser);
+                    if (!existingUser.getEmail().equals(userInput.getEmail())) {
+                        if (userRepository.findByEmail(userInput.getEmail()) != null) {
+                            throw new DuplicateEmailException("Email " + userInput.getEmail() + " is already in use.");
+                        }
+                    }
+                    existingUser.setName(userInput.getName());
+                    existingUser.setEmail(userInput.getEmail());
+                    existingUser.setLastUpdate(LocalDateTime.now());
+                    existingUser.setLastName(userInput.getLastName());
+                    existingUser.setSecondLastName(userInput.getSecondLastName());
+                    existingUser.setActive(userInput.isActive());
+                    Set<Permission> permissions = userInput.getPermissions().stream()
+                            .map(permissionMapper::convertToEntity)
+                            .collect(Collectors.toSet());
+                    existingUser.setPermissions(permissions);
+
+                    if (userInput.getCareerId() != null) {
+                        Career career = careerRepository.findById(userInput.getCareerId())
+                                .orElseThrow(() -> new ElementNotFoundException("Career with ID " + userInput.getCareerId() + " not found"));
+                        existingUser.setCareer(career);
+                    } else {
+                        existingUser.setCareer(null);
+                    }
+
+                    User savedUser = userRepository.save(existingUser);
                     return Optional.of(userMapper.convertToDTO(savedUser));
                 })
                 .orElseThrow(() -> new ElementNotFoundException("User with ID " + id + " not found"));
@@ -138,12 +160,10 @@ public class UserServiceImplementation implements UserService {
     @Override
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new OpenApiResourceNotFoundException("User not found"));
-
-        // Limpiar las relaciones ManyToMany
         user.getPermissions().clear();
+        user.setCareer(null);
+        user.setCourses(null);
         userRepository.save(user);
-
-        // Eliminar el usuario
         userRepository.delete(user);
     }
 
@@ -175,13 +195,9 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public List<UserDto> findStudentsByCareerId(Long careerId) {
-        List<User> students = userRepository.findStudentsByCareerId(careerId);
-        List<UserDto> userDtos = new ArrayList<>();
-        for (User student : students) {
-            userDtos.add(userMapper.convertToDTO(student));
-        }
-        return userDtos;
+    public Page<UserDto> findStudentsByCareerId(Long careerId, Pageable pageable) {
+        Page<User> studentsPage = userRepository.findStudentsByCareerId(careerId, pageable);
+        return studentsPage.map(userMapper::convertToDTO);
     }
 
     private boolean checkImportantSpaces(UserInput userInput) {
@@ -198,6 +214,10 @@ public class UserServiceImplementation implements UserService {
 
     private UserDto convertToDto(User user) {
         return userMapper.convertToDTO(user);
+    }
+
+    private Permission convertToEntity(PermissionDto permission) {
+        return permissionMapper.convertToEntity(permission);
     }
 
 }

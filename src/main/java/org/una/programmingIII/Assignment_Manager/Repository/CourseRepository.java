@@ -1,9 +1,11 @@
 package org.una.programmingIII.Assignment_Manager.Repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.una.programmingIII.Assignment_Manager.Model.Course;
 
 import java.util.List;
@@ -32,12 +34,20 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "AND cu.user_id = :studentId " +
             "WHERE cu.user_id IS NULL AND c.professor_id = :professorId",
             nativeQuery = true)
-
-    List<Course> findAvailableCoursesByCareerIdUserIdAndProfessorId(@Param("professorId") Long professorId,@Param("studentId") Long studentId);
+    List<Course> findAvailableCoursesByCareerIdUserIdAndProfessorId(@Param("professorId") Long professorId, @Param("studentId") Long studentId);
 
     @Query(value = "SELECT c.* FROM courses c JOIN course_users cu ON c.id = cu.course_id WHERE cu.user_id = :studentId AND c.professor_id = :professorId",
             nativeQuery = true)
-    List<Course> findCoursesEnrolledByStudentIdAAndProfessorIs(@Param("professorId") Long professorId,@Param("studentId") Long studentId);
+    List<Course> findCoursesEnrolledByStudentIdAAndProfessorIs(@Param("professorId") Long professorId, @Param("studentId") Long studentId);
+
+    @Query(value = "SELECT c.* FROM courses c WHERE c.professor_id = :professorId",
+            nativeQuery = true)
+    List<Course> findCoursesByProfessorId(@Param("professorId") Long professorId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM course_users WHERE user_id = :user_id AND course_id = :course_id", nativeQuery = true)
+    void unenrollCourseUser(@Param("user_id") Long user_id, @Param("course_id") Long course_id);
 
 
 }

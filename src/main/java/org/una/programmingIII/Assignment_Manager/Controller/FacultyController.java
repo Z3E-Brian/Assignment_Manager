@@ -65,6 +65,12 @@ public class FacultyController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = CustomErrorResponse.class))),
     })
+    @GetMapping("getByUniversityId/{universityId}")
+    public ResponseEntity<List<FacultyDto>> getFacultiesByUniversityId(@PathVariable Long universityId) {
+        List<FacultyDto> faculties = facultyService.getFacultiesByUniversityId(universityId);
+        return new ResponseEntity<>(faculties, HttpStatus.OK);
+    }
+
     @GetMapping("getPageable")
     public Page<FacultyDto> getAllUniversities(Pageable pageable) {
         return facultyService.getPageFaculty(pageable);

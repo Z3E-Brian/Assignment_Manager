@@ -37,4 +37,6 @@ public interface CourseService {
 
     List<CourseDto> findCoursesEnrolledByStudentIdAAndProfessorIs (Long professorId, Long studentId);
 
+    List<CourseDto> findCoursesByProfessorId(Long professorId);
+
 }
